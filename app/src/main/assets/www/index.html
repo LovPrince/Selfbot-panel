@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Selfbot VC</title>
+<style>
+:root{
+  --bg:#0e0f11;--bg2:#161719;--bg3:#1e1f22;--bg4:#2b2d31;
+  --b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.13);
+  --t:#e8e9ea;--t2:#9a9b9e;--t3:#5c5e63;
+  --ac:#5865f2;--ach:#4752c4;--acl:#7983f5;
+  --gr:#23a55a;--gr-bg:rgba(35,165,90,.12);--gr-b:rgba(35,165,90,.3);
+  --rd:#f23f43;--rd-bg:rgba(242,63,67,.12);--rd-b:rgba(242,63,67,.3);
+  --yl:#f0b132;--yl-bg:rgba(240,177,50,.1);--yl-b:rgba(240,177,50,.3);
+  --pu:#9b59b6;--pu-bg:rgba(155,89,182,.12);--pu-b:rgba(155,89,182,.3);
+  --r:8px;
+  --font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  --mono:'SF Mono','Fira Code',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--t);font-family:var(--font);font-size:15px;min-height:100vh}
+.app{max-width:480px;margin:0 auto;padding:0 14px 48px}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;background:var(--bg3);border-radius:10px;padding:3px;margin:14px 0 10px;position:sticky;top:8px;z-index:10}
+.tab{flex:1;padding:8px 4px;border:none;background:transparent;color:var(--t3);font-family:var(--font);font-size:12px;font-weight:600;border-radius:7px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.tab svg{width:13px;height:13px}
+.tab.active{background:var(--bg);color:var(--t);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.section{display:none}.section.active{display:flex;flex-direction:column;gap:10px}
+
+/* Header */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 0 4px}
+.hdr-l{display:flex;align-items:center;gap:10px}
+.logo{width:34px;height:34px;background:var(--ac);border-radius:10px;display:flex;align-items:center;justify-content:center}
+.logo svg{width:19px;height:19px}
+.appname{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.appsub{font-size:11px;color:var(--t3)}
+.pill{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;background:var(--bg3);color:var(--t3);border:1px solid var(--b);display:flex;align-items:center;gap:5px}
+.pdot{width:6px;height:6px;border-radius:50%;background:var(--t3)}
+.pill.on{color:var(--gr);border-color:var(--gr-b);background:var(--gr-bg)}.pill.on .pdot{background:var(--gr);box-shadow:0 0 5px var(--gr)}
+.pill.vc{color:var(--acl);border-color:rgba(121,131,245,.3);background:rgba(88,101,242,.1)}.pill.vc .pdot{background:var(--acl)}
+
+/* Card */
+.card{background:var(--bg2);border:1px solid var(--b);border-radius:12px;padding:13px 14px}
+.clabel{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+
+/* Input */
+.iw{position:relative}
+.iw .ii{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none;display:flex}
+.iw .ii svg{width:14px;height:14px}
+input[type=text],input[type=password]{width:100%;background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);color:var(--t);font-family:var(--font);font-size:13px;padding:9px 9px 9px 33px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+input:focus{border-color:var(--ac)}
+input::placeholder{color:var(--t3)}
+
+/* Btn */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--b2);background:var(--bg3);color:var(--t);font-family:var(--font);font-size:13px;font-weight:500;padding:8px 12px;border-radius:var(--r);cursor:pointer;transition:background .1s,transform .08s;white-space:nowrap}
+.btn:hover{background:var(--bg4)}.btn:active{transform:scale(.97)}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.btn.pr{background:var(--ac);border-color:transparent;color:#fff}.btn.pr:hover{background:var(--ach)}
+.btn.dr{color:var(--rd);border-color:var(--rd-b);background:var(--rd-bg)}.btn.dr:hover{background:rgba(242,63,67,.2)}
+.btn.gr{color:var(--gr);border-color:var(--gr-b);background:var(--gr-bg)}.btn.gr:hover{background:rgba(35,165,90,.2)}
+.btn.pu{color:var(--pu);border-color:var(--pu-b);background:var(--pu-bg)}.btn.pu:hover{background:rgba(155,89,182,.2)}
+.btn.yl{color:var(--yl);border-color:var(--yl-b);background:var(--yl-bg)}.btn.yl:hover{background:rgba(240,177,50,.18)}
+.btn.sm{padding:6px 10px;font-size:12px}.btn.sm svg{width:13px;height:13px}
+.btn.ico{padding:8px}
+.btn.full{width:100%}
+
+/* Banner */
+.banner{display:none;align-items:center;gap:7px;padding:9px 11px;background:var(--yl-bg);border:1px solid var(--yl-b);border-radius:var(--r);font-size:12px;color:var(--yl);margin-top:8px}
+.banner.show{display:flex}.banner svg{width:14px;height:14px;flex-shrink:0}
+
+/* Server row */
+.srow{display:flex;gap:7px}.srow input{flex:1}
+
+/* Bot card */
+.bot-list{display:flex;flex-direction:column;gap:7px}
+.bot-card{background:var(--bg3);border:1px solid var(--b);border-radius:10px;overflow:hidden}
+.bhead{display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;user-select:none}
+.bhead:hover{background:rgba(255,255,255,.025)}
+.bav{width:30px;height:30px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;position:relative}
+.sdot{position:absolute;bottom:0;right:0;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg3);background:#555}
+.sdot.online{background:var(--gr)}.sdot.invc{background:var(--acl)}.sdot.playing{background:var(--yl);box-shadow:0 0 6px var(--yl)}
+.binfo{flex:1;min-width:0}
+.bname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btag{font-size:11px;color:var(--t3)}
+.bbadges{display:flex;gap:3px;margin-left:auto;align-items:center}
+.bdg{font-size:10px;font-weight:600;padding:2px 6px;border-radius:20px;border:1px solid var(--b2)}
+.bdg.vc{color:var(--acl);border-color:rgba(121,131,245,.3);background:rgba(88,101,242,.1)}
+.bdg.mt{color:var(--rd);border-color:var(--rd-b);background:var(--rd-bg)}
+.bdg.df{color:var(--yl);border-color:var(--yl-b);background:var(--yl-bg)}
+.bdg.pl{color:var(--yl);border-color:var(--yl-b);background:var(--yl-bg)}
+.chev{color:var(--t3);transition:transform .2s;flex-shrink:0}.chev svg{width:13px;height:13px;display:block}
+.chev.open{transform:rotate(180deg)}
+.bbody{display:none;padding:0 12px 12px;border-top:1px solid var(--b)}
+.bbody.open{display:block}
+.bch-row{display:flex;gap:7px;margin:10px 0 7px}.bch-row input{flex:1}
+.bactions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btoggles{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.tog{display:flex;align-items:center;justify-content:center;gap:7px;padding:9px;background:var(--bg4);border:1px solid var(--b);border-radius:var(--r);color:var(--t2);font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.tog svg{width:14px;height:14px;flex-shrink:0}
+.tog:hover{background:var(--bg)}.tog.on{background:var(--rd-bg);border-color:var(--rd-b);color:var(--rd)}
+.bsrv{margin-top:7px}
+.bsrv-row{display:flex;gap:6px;margin-top:6px}.bsrv-row input{flex:1}
+.bremove{margin-top:9px;width:100%}
+
+/* Bulk */
+.bulk-ch{display:flex;gap:7px;margin-bottom:8px}.bulk-ch input{flex:1}
+.bulk-row{display:flex;gap:7px;flex-wrap:wrap}
+
+/* Audio */
+.audio-upload-area{border:2px dashed var(--b2);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative}
+.audio-upload-area:hover,.audio-upload-area.drag{border-color:var(--ac);background:rgba(88,101,242,.05)}
+.audio-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{color:var(--t3);margin-bottom:6px}
+.upload-icon svg{width:28px;height:28px}
+.upload-txt{font-size:13px;color:var(--t2)}.upload-sub{font-size:11px;color:var(--t3);margin-top:3px}
+.progress-bar{height:3px;background:var(--b);border-radius:3px;margin-top:8px;overflow:hidden;display:none}
+.progress-bar.show{display:block}
+.progress-fill{height:100%;background:var(--ac);border-radius:3px;width:0%;transition:width .2s}
+
+.audio-list{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.audio-item{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);cursor:pointer;transition:border-color .15s}
+.audio-item:hover{border-color:var(--b2)}
+.audio-item.selected{border-color:var(--ac);background:rgba(88,101,242,.07)}
+.audio-item.playing{border-color:var(--yl);background:var(--yl-bg)}
+.ai-icon{color:var(--t3);flex-shrink:0}.ai-icon svg{width:16px;height:16px;display:block}
+.ai-name{font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-size{font-size:11px;color:var(--t3);flex-shrink:0}
+.ai-del{background:none;border:none;color:var(--t3);cursor:pointer;padding:3px;display:flex;align-items:center;border-radius:4px;transition:color .1s}
+.ai-del:hover{color:var(--rd)}
+.ai-del svg{width:13px;height:13px}
+.audio-empty{text-align:center;padding:20px;color:var(--t3);font-size:13px}
+
+.play-ctrl{background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:12px}
+.play-now{font-size:12px;color:var(--t3);margin-bottom:9px}
+.play-now span{color:var(--yl);font-weight:600}
+.play-row{display:flex;gap:7px;align-items:center}
+.loop-toggle{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t2);cursor:pointer;padding:7px 10px;border:1px solid var(--b);border-radius:var(--r);background:var(--bg4);transition:all .15s;white-space:nowrap}
+.loop-toggle svg{width:14px;height:14px}
+.loop-toggle.on{color:var(--ac);border-color:rgba(88,101,242,.4);background:rgba(88,101,242,.1)}
+
+/* Log */
+.logbox{background:var(--bg);border:1px solid var(--b);border-radius:var(--r);padding:9px 11px;height:160px;overflow-y:auto;font-family:var(--mono);font-size:11px;line-height:1.65}
+.logbox::-webkit-scrollbar{width:3px}.logbox::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+.ll{display:flex;gap:7px}.lt{color:var(--t3);flex-shrink:0}
+.ll.ok .lm{color:var(--gr)}.ll.error .lm{color:var(--rd)}.ll.warn .lm{color:var(--yl)}.ll.info .lm{color:var(--t2)}
+
+.empty{text-align:center;padding:24px;color:var(--t3);font-size:13px}
+.footer{text-align:center;padding:12px 0 4px;font-size:11px;color:var(--t3)}
+.row{display:flex;gap:7px}
+.log-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+    </div>
+    <div>
+      <div class="appname">Selfbot VC</div>
+      <div class="appsub">Multi-bot controller</div>
+    </div>
+  </div>
+  <div class="pill" id="pill"><span class="pdot"></span><span id="ptxt">Offline</span></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('bots',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Bots
+  </button>
+  <button class="tab" onclick="switchTab('servers',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Servers
+  </button>
+  <button class="tab" onclick="switchTab('audio',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    Audio
+  </button>
+  <button class="tab" onclick="switchTab('log',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Log
+  </button>
+</div>
+
+<!-- ═══ BOTS TAB ═══ -->
+<div id="tab-bots" class="section active">
+
+  <!-- Server connection -->
+  <div class="card">
+    <div class="clabel">Server</div>
+    <div class="srow">
+      <input type="text" id="srv-url" value="ws://localhost:3000" placeholder="ws://localhost:3000">
+      <button class="btn pr" id="srv-btn" onclick="connectWS()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>Connect
+      </button>
+    </div>
+    <div class="banner show" id="banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="btxt">Start server.js in Termux first</span>
+    </div>
+  </div>
+
+  <!-- Add bot -->
+  <div class="card">
+    <div class="clabel">Add bot</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div class="row">
+        <div class="iw" style="flex:1">
+          <span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <input type="text" id="bot-label" placeholder="Label (e.g. Alt 1)">
+        </div>
+        <button class="btn ico" onclick="toggleVis()" title="Show/hide token">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <div class="iw">
+        <span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
+        <input type="password" id="bot-token" placeholder="User token">
+      </div>
+      <button class="btn pr" onclick="addBot()" style="align-self:flex-start">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add bot
+      </button>
+    </div>
+  </div>
+
+  <!-- Bot list -->
+  <div class="card">
+    <div class="clabel">Bots (<span id="bot-count">0</span>)</div>
+    <div class="bot-list" id="bot-list">
+      <div class="empty">No bots added yet</div>
+    </div>
+  </div>
+
+  <!-- Bulk VC -->
+  <div class="card" id="bulk-card" style="display:none">
+    <div class="clabel">Bulk VC</div>
+    <div class="bulk-ch">
+      <div class="iw" style="flex:1">
+        <span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
+        <input type="text" id="bulk-ch" placeholder="Channel ID for all bots">
+      </div>
+    </div>
+    <div class="bulk-row">
+      <button class="btn gr" onclick="bulkCmd('joinAll')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Join All
+      </button>
+      <button class="btn dr" onclick="bulkCmd('leaveAll')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Leave All
+      </button>
+      <button class="btn" onclick="bulkCmd('muteAll',true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6M17 16.95A7 7 0 015 12v-2m14 0v2"/></svg>Mute All
+      </button>
+      <button class="btn" onclick="bulkCmd('muteAll',false)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>Unmute All
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ SERVERS TAB ═══ -->
+<div id="tab-servers" class="section">
+
+  <div class="card">
+    <div class="clabel">Join server via invite</div>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:10px;line-height:1.6">Paste a Discord invite link or code. Select a bot below, or use "All Bots".</p>
+    <div class="iw" style="margin-bottom:8px">
+      <span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></span>
+      <input type="text" id="invite-url" placeholder="https://discord.gg/abc123  or  abc123">
+    </div>
+    <div class="row" style="margin-bottom:10px">
+      <div class="iw" style="flex:1">
+        <span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <input type="text" id="srv-bot-select" placeholder="Bot label or leave blank for All" readonly style="cursor:pointer" onclick="openBotPicker()">
+      </div>
+      <button class="btn ico" onclick="clearBotPick()" title="Clear selection">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="bot-picker" style="display:none;flex-direction:column;gap:5px;margin-bottom:10px;background:var(--bg3);border-radius:var(--r);padding:6px;border:1px solid var(--b)"></div>
+    <div class="row">
+      <button class="btn pu full" onclick="doServerJoin()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+        Join Server
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Guilds per bot</div>
+    <div id="guild-list">
+      <div class="empty" style="padding:16px">Connect bots first</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ AUDIO TAB ═══ -->
+<div id="tab-audio" class="section">
+
+  <div class="card">
+    <div class="clabel">Upload audio</div>
+    <div class="audio-upload-area" id="drop-zone">
+      <input type="file" accept=".mp3,.wav,.ogg,.flac,.m4a,.aac" multiple onchange="handleFileSelect(event)">
+      <div class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+      <div class="upload-txt">Tap to pick or drag audio files</div>
+      <div class="upload-sub">MP3 · WAV · OGG · FLAC · M4A · AAC</div>
+    </div>
+    <div class="progress-bar" id="prog-bar"><div class="progress-fill" id="prog-fill"></div></div>
+    <div id="upload-status" style="font-size:11px;color:var(--t3);margin-top:5px;text-align:center"></div>
+  </div>
+
+  <div class="card">
+    <div class="clabel">Files on server</div>
+    <div class="audio-list" id="audio-list">
+      <div class="audio-empty">No audio files yet</div>
+    </div>
+  </div>
+
+  <div class="card" id="play-ctrl-card" style="display:none">
+    <div class="clabel">Playback</div>
+    <div class="play-ctrl">
+      <div class="play-now" id="play-now-label">No file selected</div>
+      <div class="play-row">
+        <button class="btn gr" id="play-btn" onclick="doPlay()" style="flex:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play All Bots
+        </button>
+        <button class="btn dr" onclick="doStop()" style="flex:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+          Stop All
+        </button>
+        <button class="loop-toggle" id="loop-btn" onclick="toggleLoop()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+          Loop
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ LOG TAB ═══ -->
+<div id="tab-log" class="section">
+  <div class="card">
+    <div class="log-hdr">
+      <div class="clabel" style="margin:0">Activity log</div>
+      <button class="btn sm" onclick="document.getElementById('logbox').innerHTML=''">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Clear
+      </button>
+    </div>
+    <div class="logbox" id="logbox" style="height:400px"></div>
+  </div>
+</div>
+
+<div class="footer">⚠️ Selfbots violate Discord ToS — use at your own risk</div>
+</div>
+
+<script>
+let ws=null,retryT=null,wsOk=false;
+let botsData={};
+let expanded={};
+let audioFiles=[];
+let selectedFile=null;
+let looping=false;
+let playState={playing:false,file:null,loop:false};
+let selectedBotId=null; // for server join
+
+// ── Tabs ────────────────────────────────────────────────────────────────────
+function switchTab(name,el){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── WS ──────────────────────────────────────────────────────────────────────
+function connectWS(){
+  const url=(document.getElementById('srv-url').value||'ws://localhost:3000').trim();
+  if(ws&&ws.readyState<2)ws.close();
+  clearTimeout(retryT);
+  log('Connecting to '+url+'…','info');
+  try{ws=new WebSocket(url);}catch(e){log('Invalid URL','error');return;}
+
+  ws.onopen=()=>{
+    wsOk=true;
+    document.getElementById('banner').classList.remove('show');
+    document.getElementById('srv-btn').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg> Disconnect';
+    setPill('on','Connected');
+    log('Server connected','ok');
+    // request audio list
+    fetch('/audio-list').then(r=>r.json()).then(files=>{audioFiles=files;renderAudio();}).catch(()=>{});
+  };
+
+  ws.onmessage=e=>{
+    let m;try{m=JSON.parse(e.data);}catch{return;}
+    if(m.type==='init'||m.type==='botList'){
+      botsData={};(m.bots||[]).forEach(b=>botsData[b.id]=b);
+      if(m.audioFiles)audioFiles=m.audioFiles;
+      if(m.playState)playState=m.playState;
+      renderBots();renderAudio();renderPlayState();renderGuilds();
+    }else if(m.type==='log'){
+      log(m.text,m.level||'info');
+    }else if(m.type==='audioList'){
+      audioFiles=m.files||[];renderAudio();
+    }else if(m.type==='playState'){
+      playState=m;renderPlayState();
+    }
+  };
+
+  ws.onclose=()=>{
+    wsOk=false;
+    document.getElementById('banner').classList.add('show');
+    document.getElementById('btxt').textContent='Server disconnected — retrying…';
+    document.getElementById('srv-btn').innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg> Connect';
+    setPill('','Offline');
+    retryT=setTimeout(connectWS,4000);
+  };
+
+  ws.onerror=()=>{};
+}
+
+function send(obj){
+  if(!wsOk){log('Not connected to server','error');return;}
+  ws.send(JSON.stringify(obj));
+}
+
+// ── Bots ────────────────────────────────────────────────────────────────────
+function addBot(){
+  const token=document.getElementById('bot-token').value.trim();
+  const label=document.getElementById('bot-label').value.trim();
+  if(!token){log('Enter a token','error');return;}
+  send({action:'addBot',token,label});
+  document.getElementById('bot-token').value='';
+  document.getElementById('bot-label').value='';
+}
+
+function removeBot(id){send({action:'removeBot',botId:id});}
+
+function vcAction(id,action){
+  const ch=document.getElementById('ch-'+id)?.value.trim();
+  if((action==='join'||action==='move')&&!ch){log('[Bot '+id+'] Enter a channel ID','error');document.getElementById('ch-'+id)?.focus();return;}
+  send({action,botId:id,channelId:ch});
+}
+
+function toggleMute(id){const b=botsData[id];if(!b)return;send({action:'mute',botId:id,value:!b.muted});}
+function toggleDeaf(id){const b=botsData[id];if(!b)return;send({action:'deafen',botId:id,value:!b.deafened});}
+
+function bulkCmd(action,value){
+  const ch=document.getElementById('bulk-ch')?.value.trim();
+  if(action==='joinAll'&&!ch){log('Enter a channel ID for bulk join','error');return;}
+  send({action,channelId:ch,value});
+}
+
+function toggleExpand(id){
+  expanded[id]=!expanded[id];
+  const body=document.getElementById('body-'+id);
+  const chev=document.getElementById('chev-'+id);
+  if(body)body.className='bbody'+(expanded[id]?' open':'');
+  if(chev)chev.className='chev'+(expanded[id]?' open':'');
+}
+
+function toggleVis(){const i=document.getElementById('bot-token');i.type=i.type==='password'?'text':'password';}
+
+function renderBots(){
+  const list=document.getElementById('bot-list');
+  const count=document.getElementById('bot-count');
+  const bulk=document.getElementById('bulk-card');
+  const ids=Object.keys(botsData);
+  count.textContent=ids.length;
+  bulk.style.display=ids.length>1?'':'none';
+
+  if(ids.length===0){list.innerHTML='<div class="empty">No bots added yet</div>';return;}
+
+  // Remove deleted
+  [...list.querySelectorAll('.bot-card')].forEach(el=>{if(!botsData[el.dataset.id])el.remove();});
+
+  ids.forEach(idStr=>{
+    const id=Number(idStr),b=botsData[id];
+    const ex=document.getElementById('bcard-'+id);
+    if(ex){
+      ex.querySelector('.bname').textContent=b.label||'Bot '+id;
+      ex.querySelector('.btag').textContent=b.username||(b.connected?'Connecting…':'Offline');
+      const sd=ex.querySelector('.sdot');
+      sd.className='sdot'+(b.playing?' playing':b.inVC?' invc':b.connected?' online':'');
+      ex.querySelector('.bbadges').innerHTML=badgeHTML(b);
+      const mt=ex.querySelector('.tog.mt');const df=ex.querySelector('.tog.df');
+      if(mt){mt.className='tog mt'+(b.muted?' on':'');mt.lastChild.textContent=b.muted?' Unmute':' Mute';}
+      if(df){df.className='tog df'+(b.deafened?' on':'');df.lastChild.textContent=b.deafened?' Undeafen':' Deafen';}
+    }else{
+      const card=document.createElement('div');
+      card.className='bot-card';card.id='bcard-'+id;card.dataset.id=id;
+      card.innerHTML=botCardHTML(b);
+      list.appendChild(card);
+    }
+  });
+
+  // Pill
+  const total=ids.length,online=ids.filter(i=>botsData[i].connected).length,invc=ids.filter(i=>botsData[i].inVC).length;
+  const playing=ids.filter(i=>botsData[i].playing).length;
+  if(playing>0)setPill('vc',playing+' playing');
+  else if(invc>0)setPill('vc',invc+'/'+total+' in VC');
+  else if(online>0)setPill('on',online+'/'+total+' online');
+  else setPill('','Offline');
+
+  renderGuilds();
+  renderBotPicker();
+}
+
+function badgeHTML(b){
+  let h='';
+  if(b.playing)h+='<span class="bdg pl">▶ Playing</span>';
+  else if(b.inVC)h+='<span class="bdg vc">VC</span>';
+  if(b.muted)h+='<span class="bdg mt">Mute</span>';
+  if(b.deafened)h+='<span class="bdg df">Deaf</span>';
+  return h;
+}
+
+function botCardHTML(b){
+  const id=b.id,initials=(b.label||'B'+id).slice(0,2).toUpperCase();
+  const sdotCls=b.playing?' playing':b.inVC?' invc':b.connected?' online':'';
+  const exp=expanded[id];
+  return `
+<div class="bhead" onclick="toggleExpand(${id})">
+  <div class="bav">${initials}<span class="sdot${sdotCls}"></span></div>
+  <div class="binfo">
+    <div class="bname">${b.label||'Bot '+id}</div>
+    <div class="btag">${b.username||(b.connected?'Connecting…':'Offline')}</div>
+  </div>
+  <div class="bbadges">${badgeHTML(b)}</div>
+  <div class="chev${exp?' open':''}" id="chev-${id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+</div>
+<div class="bbody${exp?' open':''}" id="body-${id}">
+  <div class="bch-row">
+    <div class="iw" style="flex:1">
+      <span class="ii"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span>
+      <input type="text" id="ch-${id}" placeholder="Channel ID">
+    </div>
+  </div>
+  <div class="bactions">
+    <button class="btn gr" onclick="vcAction(${id},'join')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Join</button>
+    <button class="btn dr" onclick="vcAction(${id},'leave')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>Leave</button>
+    <button class="btn" onclick="vcAction(${id},'rejoin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Rejoin</button>
+    <button class="btn" onclick="vcAction(${id},'move')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>Move</button>
+  </div>
+  <div class="btoggles">
+    <button class="tog mt${b.muted?' on':''}" onclick="toggleMute(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/></svg>${b.muted?' Unmute':' Mute'}</button>
+    <button class="tog df${b.deafened?' on':''}" onclick="toggleDeaf(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>${b.deafened?' Undeafen':' Deafen'}</button>
+  </div>
+  <button class="btn dr bremove" onclick="removeBot(${id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>Remove bot</button>
+</div>`;
+}
+
+// ── Server join ──────────────────────────────────────────────────────────────
+function openBotPicker(){
+  const p=document.getElementById('bot-picker');
+  p.style.display=p.style.display==='none'?'flex':'none';
+}
+
+function renderBotPicker(){
+  const p=document.getElementById('bot-picker');
+  if(!p)return;
+  const ids=Object.keys(botsData);
+  p.innerHTML='';
+  if(ids.length===0){p.innerHTML='<div style="color:var(--t3);font-size:12px;padding:4px">No bots connected</div>';return;}
+  ids.forEach(idStr=>{
+    const b=botsData[idStr];
+    const btn=document.createElement('button');
+    btn.className='btn sm'+(selectedBotId===b.id?' pr':'');
+    btn.textContent=(b.label||'Bot '+b.id)+(b.username?' ('+b.username+')':'');
+    btn.onclick=()=>{selectedBotId=b.id;document.getElementById('srv-bot-select').value=b.label||'Bot '+b.id;document.getElementById('bot-picker').style.display='none';};
+    p.appendChild(btn);
+  });
+}
+
+function clearBotPick(){selectedBotId=null;document.getElementById('srv-bot-select').value='';document.getElementById('bot-picker').style.display='none';}
+
+function doServerJoin(){
+  const invite=document.getElementById('invite-url').value.trim();
+  if(!invite){log('Enter an invite link','error');return;}
+  if(selectedBotId!==null){
+    send({action:'joinServer',botId:selectedBotId,inviteCode:invite});
+  }else{
+    send({action:'joinServerAll',inviteCode:invite});
+  }
+}
+
+function renderGuilds(){
+  const el=document.getElementById('guild-list');
+  if(!el)return;
+  const ids=Object.keys(botsData);
+  if(ids.length===0){el.innerHTML='<div class="empty" style="padding:16px">Connect bots first</div>';return;}
+  el.innerHTML='<div style="display:flex;flex-direction:column;gap:7px">'+
+    ids.map(idStr=>{
+      const b=botsData[idStr];
+      return `<div style="padding:9px 11px;background:var(--bg3);border:1px solid var(--b);border-radius:var(--r)">
+        <div style="font-size:13px;font-weight:600">${b.label||'Bot '+b.id}</div>
+        <div style="font-size:11px;color:var(--t3)">${b.username||'Not logged in'} · ${b.connected?'Online':'Offline'}</div>
+      </div>`;
+    }).join('')+'</div>';
+}
+
+// ── Audio ────────────────────────────────────────────────────────────────────
+function handleFileSelect(e){
+  const files=[...e.target.files];
+  if(!files.length)return;
+  uploadFiles(files);
+}
+
+const dz=document.getElementById('drop-zone');
+if(dz){
+  dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+  dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+  dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');uploadFiles([...e.dataTransfer.files]);});
+}
+
+async function uploadFiles(files){
+  if(!wsOk){log('Not connected to server','error');return;}
+  const bar=document.getElementById('prog-bar');
+  const fill=document.getElementById('prog-fill');
+  const status=document.getElementById('upload-status');
+  bar.classList.add('show');
+
+  for(let i=0;i<files.length;i++){
+    const f=files[i];
+    status.textContent='Uploading '+f.name+'…';
+    fill.style.width=((i/files.length)*100)+'%';
+    try{
+      const buf=await f.arrayBuffer();
+      const resp=await fetch('/upload',{
+        method:'POST',
+        headers:{'Content-Type':f.type||'application/octet-stream','x-filename':f.name},
+        body:buf
+      });
+      const json=await resp.json();
+      if(json.ok)log('Uploaded: '+f.name,'ok');
+    }catch(err){log('Upload failed: '+err.message,'error');}
+  }
+
+  fill.style.width='100%';
+  status.textContent='Done';
+  setTimeout(()=>{bar.classList.remove('show');fill.style.width='0%';status.textContent='';},1500);
+  fetch('/audio-list').then(r=>r.json()).then(files=>{audioFiles=files;renderAudio();});
+}
+
+function renderAudio(){
+  const list=document.getElementById('audio-list');
+  const ctrl=document.getElementById('play-ctrl-card');
+  if(!list)return;
+  if(!audioFiles||audioFiles.length===0){
+    list.innerHTML='<div class="audio-empty">No audio files yet — upload some above</div>';
+    if(ctrl)ctrl.style.display='none';
+    return;
+  }
+  if(ctrl)ctrl.style.display='';
+
+  list.innerHTML=audioFiles.map(f=>{
+    const sel=selectedFile===f.name;
+    const playing=playState.playing&&playState.file===f.name;
+    const kb=(f.size/1024).toFixed(0);
+    return `<div class="audio-item${sel?' selected':''}${playing?' playing':''}" onclick="selectAudio('${f.name}')">
+      <div class="ai-icon">
+        ${playing?
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>':
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'
+        }
+      </div>
+      <div class="ai-name">${f.name}</div>
+      <div class="ai-size">${kb} KB</div>
+      <button class="ai-del" onclick="event.stopPropagation();deleteAudio('${f.name}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function selectAudio(name){
+  selectedFile=name;
+  renderAudio();
+  renderPlayState();
+}
+
+function renderPlayState(){
+  const lbl=document.getElementById('play-now-label');
+  const lbtn=document.getElementById('loop-btn');
+  if(!lbl)return;
+  if(playState.playing&&playState.file){
+    lbl.innerHTML='Now playing: <span>'+playState.file+'</span>';
+  }else if(selectedFile){
+    lbl.innerHTML='Selected: <span>'+selectedFile+'</span>';
+  }else{
+    lbl.textContent='No file selected — tap a file above';
+  }
+  if(lbtn){lbtn.className='loop-toggle'+(looping?' on':'');}
+  renderAudio();
+}
+
+function doPlay(){
+  if(!selectedFile){log('Select an audio file first','error');return;}
+  const botsInVC=Object.values(botsData).filter(b=>b.inVC&&b.connected);
+  if(botsInVC.length===0){log('No bots are in a VC — join a channel first','warn');return;}
+  send({action:'playAll',file:selectedFile,loop:looping});
+}
+
+function doStop(){send({action:'stopAll'});}
+
+function toggleLoop(){
+  looping=!looping;
+  renderPlayState();
+}
+
+function deleteAudio(name){
+  if(selectedFile===name){selectedFile=null;renderPlayState();}
+  fetch('/audio/'+encodeURIComponent(name),{method:'DELETE'}).then(()=>{
+    audioFiles=audioFiles.filter(f=>f.name!==name);
+    renderAudio();
+  });
+}
+
+// ── Utils ────────────────────────────────────────────────────────────────────
+function setPill(cls,txt){
+  const p=document.getElementById('pill');
+  p.className='pill'+(cls?' '+cls:'');
+  document.getElementById('ptxt').textContent=txt;
+}
+
+function log(text,level='info'){
+  const box=document.getElementById('logbox');
+  if(!box)return;
+  const l=document.createElement('div');
+  l.className='ll '+level;
+  const t=new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  l.innerHTML=`<span class="lt">${t}</span><span class="lm">${text}</span>`;
+  box.appendChild(l);
+  box.scrollTop=box.scrollHeight;
+  while(box.children.length>500)box.removeChild(box.firstChild);
+}
+
+document.getElementById('banner').classList.add('show');
+log('App started — connect to server first','info');
+</script>
+</body>
+</html>
